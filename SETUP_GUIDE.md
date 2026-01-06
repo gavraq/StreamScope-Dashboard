@@ -34,7 +34,7 @@ This application is containerized to run on your home server at `192.168.5.190:8
 1.  SSH into your home server.
 2.  Clone the repository (replace URL with your actual repo):
     ```bash
-    git clone https://github.com/yourusernamegavraq/StreamScope-Dashboard.git
+    git clone https://github.com/gavraq/StreamScope-Dashboard.git
     cd streamscope
     ```
 

@@ -1,0 +1,5 @@
+{
+  "name": "StreamScope Dashboard",
+  "description": "A comprehensive YouTube subscription manager with analytics, watch history, and AI-powered insights using Gemini.",
+  "requestFramePermissions": []
+}

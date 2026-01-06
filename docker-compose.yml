@@ -1,0 +1,13 @@
+services:
+  streamscope:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - API_KEY=${API_KEY}
+    container_name: streamscope
+    ports:
+      - "8098:80"
+    restart: unless-stopped
+    environment:
+      - API_KEY=${API_KEY}

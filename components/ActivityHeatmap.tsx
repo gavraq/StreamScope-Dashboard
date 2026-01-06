@@ -23,13 +23,13 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ history }) => {
     activityMap[v.watchedDate] = (activityMap[v.watchedDate] || 0) + 1;
   });
 
-  // Determine intensity color
+  // Determine intensity color - GitHub Green Style
   const getColor = (count: number) => {
     if (count === 0) return 'bg-[#1f1f1f]'; // Empty
-    if (count <= 2) return 'bg-red-900/40'; // Low
-    if (count <= 5) return 'bg-red-700/60'; // Medium
-    if (count <= 8) return 'bg-red-600';    // High
-    return 'bg-red-500';                    // Very High
+    if (count <= 2) return 'bg-emerald-900/60'; // Low
+    if (count <= 5) return 'bg-emerald-700/80'; // Medium
+    if (count <= 8) return 'bg-emerald-600';    // High
+    return 'bg-emerald-500';                    // Very High
   };
 
   // Group by weeks for grid layout
@@ -86,10 +86,10 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ history }) => {
       <div className="flex items-center justify-end gap-2 mt-2 text-xs text-gray-500">
         <span>Less</span>
         <div className="w-3 h-3 bg-[#1f1f1f] rounded-sm" />
-        <div className="w-3 h-3 bg-red-900/40 rounded-sm" />
-        <div className="w-3 h-3 bg-red-700/60 rounded-sm" />
-        <div className="w-3 h-3 bg-red-600 rounded-sm" />
-        <div className="w-3 h-3 bg-red-500 rounded-sm" />
+        <div className="w-3 h-3 bg-emerald-900/60 rounded-sm" />
+        <div className="w-3 h-3 bg-emerald-700/80 rounded-sm" />
+        <div className="w-3 h-3 bg-emerald-600 rounded-sm" />
+        <div className="w-3 h-3 bg-emerald-500 rounded-sm" />
         <span>More</span>
       </div>
     </div>

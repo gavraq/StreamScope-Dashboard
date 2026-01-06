@@ -23,10 +23,8 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
       const channelHistory = history.filter(h => h.channelId === channelId);
       const watchedCount = channelHistory.length;
       
-      // Find latest watch date
       let lastWatched: string | null = null;
       if (channelHistory.length > 0) {
-        // Assume history is somewhat sorted or sort it
         const sorted = [...channelHistory].sort((a,b) => new Date(b.watchedDate).getTime() - new Date(a.watchedDate).getTime());
         lastWatched = sorted[0].watchedDate;
       }
@@ -41,7 +39,6 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
     .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.userTags.some(t => t.includes(searchTerm)))
     .filter(c => {
         if (!showGhostChannels) return true;
-        // Ghost Channel Logic: No watches OR last watched > 90 days ago
         const stats = getChannelStats(c.id);
         if (stats.watchedCount === 0) return true;
         if (stats.lastWatched) {
@@ -51,7 +48,6 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
         return false;
     });
   
-  // Split into favorites and others
   const favoriteChannels = filteredChannels
     .filter(c => c.isFavorite)
     .sort((a, b) => (a.favoriteRank || 0) - (b.favoriteRank || 0));
@@ -91,22 +87,20 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
     const { watchedCount, lastWatched } = getChannelStats(channel.id);
     
     return (
-        <div key={channel.id} className={`bg-[#1a1a1a] rounded-2xl border p-5 transition-all flex flex-col relative group ${isFavSection ? 'border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.1)]' : 'border-gray-800 hover:border-gray-600'}`}>
+        <div key={channel.id} className={`glass-panel bg-slate-900/40 rounded-xl p-5 transition-all flex flex-col relative group border ${isFavSection ? 'border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'border-white/5 hover:border-white/10 hover:bg-slate-800/50'}`}>
         
-        {/* Reorder controls for Favorites */}
+        {/* Reorder controls */}
         {isFavSection && (
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-black/50 rounded-lg p-1 backdrop-blur-sm">
             <button 
                 onClick={() => onReorderFavorite(channel.id, 'up')}
                 className="p-1 hover:text-white text-gray-400 hover:bg-white/10 rounded"
-                title="Move Left/Up"
             >
                 <ArrowLeft size={14} />
             </button>
             <button 
                 onClick={() => onReorderFavorite(channel.id, 'down')}
                 className="p-1 hover:text-white text-gray-400 hover:bg-white/10 rounded"
-                title="Move Right/Down"
             >
                 <ArrowRight size={14} />
             </button>
@@ -115,52 +109,52 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
 
         <div className="flex items-start gap-4 mb-4">
             <div className="relative">
-                <img src={channel.avatarUrl} alt={channel.name} className="w-16 h-16 rounded-full object-cover border-2 border-gray-800" />
+                <img src={channel.avatarUrl} alt={channel.name} className="w-14 h-14 rounded-full object-cover border-2 border-slate-800 shadow-lg" />
                 <button 
                     onClick={() => toggleFavorite(channel)}
-                    className="absolute -bottom-1 -right-1 bg-[#1a1a1a] rounded-full p-1 border border-gray-800 shadow-sm hover:scale-110 transition-transform"
+                    className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-1 border border-slate-800 shadow-sm hover:scale-110 transition-transform"
                 >
-                    <Star size={14} className={channel.isFavorite ? "fill-yellow-500 text-yellow-500" : "text-gray-500"} />
+                    <Star size={12} className={channel.isFavorite ? "fill-amber-500 text-amber-500" : "text-slate-600"} />
                 </button>
             </div>
             <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
-                <h3 className="text-lg font-bold text-white truncate">{channel.name}</h3>
-                <a href={`https://youtube.com`} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-red-500 transition-colors">
-                <ExternalLink size={16} />
+                <h3 className="text-base font-bold text-slate-100 truncate">{channel.name}</h3>
+                <a href={`https://youtube.com`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-rose-400 transition-colors">
+                <ExternalLink size={14} />
                 </a>
             </div>
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{channel.description}</p>
-            <div className="flex gap-3 mt-3 text-xs text-gray-400">
-                <span className="bg-gray-800 px-2 py-0.5 rounded text-gray-300">{formatNumber(channel.subscriberCount)} Subs</span>
-                <span className="bg-gray-800 px-2 py-0.5 rounded text-gray-300">{channel.totalVideos} Vids</span>
+            <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{channel.description}</p>
+            <div className="flex gap-2 mt-3 text-[10px] text-slate-400 font-medium">
+                <span className="bg-slate-800/80 px-2 py-1 rounded-md">{formatNumber(channel.subscriberCount)} Subs</span>
+                <span className="bg-slate-800/80 px-2 py-1 rounded-md">{channel.totalVideos} Vids</span>
             </div>
             </div>
         </div>
 
-        <div className="mt-auto border-t border-gray-800 pt-4">
+        <div className="mt-auto border-t border-white/5 pt-4">
             <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tags</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tags</span>
             <button 
                 onClick={() => handleSuggestTags(channel)}
                 disabled={suggestingId === channel.id}
-                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50"
+                className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50 font-medium"
             >
                 {suggestingId === channel.id ? (
-                    <span className="animate-pulse">Thinking...</span>
+                    <span className="animate-pulse">AI is thinking...</span>
                 ) : (
                 <>
-                    <Wand2 size={12} />
+                    <Wand2 size={10} />
                     <span>Auto-Tag</span>
                 </>
                 )}
             </button>
             </div>
             
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-1.5 mb-3">
             {channel.userTags.map(tag => (
-                <span key={tag} className="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded flex items-center gap-1">
-                <Hash size={10} /> {tag}
+                <span key={tag} className="bg-slate-800/50 border border-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded flex items-center gap-1">
+                <Hash size={8} /> {tag}
                 </span>
             ))}
             {channel.suggestedTags.map(tag => (
@@ -171,7 +165,7 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
                     const newSuggested = channel.suggestedTags.filter(t => t !== tag);
                     onUpdateChannel({...channel, suggestedTags: newSuggested});
                 }}
-                className="bg-blue-900/30 text-blue-300 border border-blue-900/50 hover:bg-blue-900/50 text-xs px-2 py-1 rounded flex items-center gap-1 transition-colors dashed-border"
+                className="bg-blue-900/10 text-blue-300 border border-blue-500/20 hover:bg-blue-900/30 text-[10px] px-2 py-1 rounded flex items-center gap-1 transition-colors border-dashed"
                 >
                     + {tag}
                 </button>
@@ -179,8 +173,8 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
                 <div className="flex items-center">
                 <input 
                     type="text"
-                    placeholder="Add tag"
-                    className="bg-transparent border-b border-gray-700 text-xs text-white w-16 focus:outline-none focus:border-red-500 py-0.5"
+                    placeholder="Add..."
+                    className="bg-transparent border-b border-slate-700 text-[10px] text-slate-300 w-12 focus:outline-none focus:border-rose-500 py-0.5 placeholder:text-slate-600"
                     onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         handleAddTag(channel, e.currentTarget.value);
@@ -192,14 +186,14 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
             </div>
             
             {/* Stats Footer */}
-            <div className="bg-gray-900/50 rounded-lg p-2 flex justify-between items-center">
+            <div className="bg-slate-950/30 rounded-lg p-2 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Activity size={12} className={watchedCount > 0 ? "text-green-500" : "text-gray-600"} />
-                    <span className="text-xs text-gray-500">Watched: <strong className="text-gray-300">{watchedCount}</strong></span>
+                    <Activity size={12} className={watchedCount > 0 ? "text-emerald-500" : "text-slate-600"} />
+                    <span className="text-[10px] text-slate-500">Watched: <strong className="text-slate-300">{watchedCount}</strong></span>
                 </div>
                 {lastWatched && (
-                    <span className="text-[10px] text-gray-500">
-                        Last: {formatDistanceToNow(parseISO(lastWatched))} ago
+                    <span className="text-[10px] text-slate-500">
+                        {formatDistanceToNow(parseISO(lastWatched))} ago
                     </span>
                 )}
             </div>
@@ -209,35 +203,35 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
   };
 
   return (
-    <div className="p-8 h-full overflow-y-auto animate-fade-in pb-24">
+    <div className="p-8 h-full overflow-y-auto animate-fade-in pb-24 max-w-7xl mx-auto">
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-2">My Subscriptions</h2>
-          <p className="text-gray-400">Manage your channels and tags</p>
+          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Subscriptions</h2>
+          <p className="text-slate-400">Curate your feed.</p>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
             <input 
               type="text" 
-              placeholder="Search channels or tags..."
-              className="bg-[#1a1a1a] border border-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-red-500 w-full sm:w-64"
+              placeholder="Search..."
+              className="bg-slate-900/50 border border-white/10 text-slate-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-rose-500 w-full sm:w-64 text-sm backdrop-blur-sm shadow-sm transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
-          <div className="flex items-center bg-[#1a1a1a] border border-gray-700 rounded-lg px-3">
-             <Filter size={18} className="text-gray-500 mr-2" />
+          <div className="flex items-center bg-slate-900/50 border border-white/10 rounded-lg px-3 backdrop-blur-sm">
+             <Filter size={16} className="text-slate-500 mr-2" />
              <select 
-               className="bg-transparent text-gray-200 py-2 focus:outline-none"
+               className="bg-transparent text-slate-200 py-2 focus:outline-none text-sm"
                value={sortMode}
                onChange={(e) => setSortMode(e.target.value as any)}
              >
-               <option value="watched">Most Watched</option>
-               <option value="subscribers">Most Subscribers</option>
-               <option value="videos">Most Videos</option>
+               <option className="bg-slate-900" value="watched">Most Watched</option>
+               <option className="bg-slate-900" value="subscribers">Most Subscribers</option>
+               <option className="bg-slate-900" value="videos">Most Videos</option>
              </select>
           </div>
         </div>
@@ -249,23 +243,23 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
             onClick={() => setShowGhostChannels(!showGhostChannels)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 border ${
               showGhostChannels 
-                ? 'bg-purple-600 border-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.3)]' 
-                : 'bg-[#1a1a1a] border-gray-800 text-gray-400 hover:border-gray-600'
+                ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-900/30' 
+                : 'bg-slate-900/50 border-white/5 text-slate-400 hover:border-white/20'
             }`}
           >
-            <Ghost size={16} />
+            <Ghost size={14} />
             Ghost Channels
         </button>
-        <div className="h-6 w-px bg-gray-800 mx-2"></div>
+        <div className="h-6 w-px bg-white/10 mx-2"></div>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin flex-1">
             {categories.map(cat => (
             <button
                 key={cat}
                 onClick={() => setFilterCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
                 filterCategory === cat 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
+                    ? 'bg-rose-600 border-rose-500 text-white shadow-lg shadow-rose-900/30' 
+                    : 'bg-slate-900/50 border-white/5 text-slate-400 hover:border-white/20'
                 }`}
             >
                 {cat}
@@ -277,28 +271,28 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
       {/* Favorites Section */}
       {!showGhostChannels && favoriteChannels.length > 0 && (
         <div className="mb-10">
-          <h3 className="text-lg font-bold text-yellow-500 mb-4 flex items-center gap-2">
-            <Star size={18} className="fill-yellow-500" />
+          <h3 className="text-sm font-bold text-amber-500 mb-4 flex items-center gap-2 uppercase tracking-wider">
+            <Star size={14} className="fill-amber-500" />
             Favorites
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favoriteChannels.map(channel => renderChannelCard(channel, true))}
           </div>
-          <div className="h-px bg-gray-800 w-full mt-10"></div>
+          <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent w-full mt-10"></div>
         </div>
       )}
 
       {/* Main Grid */}
       <div className="mb-4">
-        {favoriteChannels.length > 0 && !showGhostChannels && <h3 className="text-lg font-bold text-gray-400 mb-4">All Subscriptions</h3>}
-        {showGhostChannels && <h3 className="text-lg font-bold text-purple-400 mb-4">Ghost Channels (Inactive &gt; 90 Days)</h3>}
+        {favoriteChannels.length > 0 && !showGhostChannels && <h3 className="text-sm font-bold text-slate-500 mb-4 uppercase tracking-wider">All Subscriptions</h3>}
+        {showGhostChannels && <h3 className="text-sm font-bold text-violet-400 mb-4 uppercase tracking-wider">Ghost Channels (Inactive &gt; 90 Days)</h3>}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {otherChannels.map(channel => renderChannelCard(channel, false))}
           
           {otherChannels.length === 0 && favoriteChannels.length === 0 && (
-             <div className="col-span-full text-center text-gray-500 py-12 flex flex-col items-center">
-               <Ghost size={48} className="mb-4 opacity-20" />
+             <div className="col-span-full text-center text-slate-500 py-12 flex flex-col items-center">
+               <Ghost size={48} className="mb-4 opacity-10" />
                <p>No channels found matching your search.</p>
                {showGhostChannels && <p className="text-sm mt-2">You don't have any inactive channels!</p>}
              </div>

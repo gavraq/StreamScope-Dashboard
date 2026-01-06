@@ -60,7 +60,6 @@ const App: React.FC = () => {
   }, []);
 
   // Save changes to DB
-  // Use a ref to prevent saving on initial mount before data is loaded
   const isMounted = useRef(false);
 
   useEffect(() => {
@@ -154,10 +153,7 @@ const App: React.FC = () => {
       const importedVideos = await parseTakeoutHistory(file);
       
       // --- SMART DIFF LOGIC ---
-      // 1. Get all existing IDs for O(1) lookup
       const existingIds = new Set(history.map(v => v.id));
-      
-      // 2. Filter imported list to find ONLY videos we don't have
       const newUniqueVideos = importedVideos.filter(v => !existingIds.has(v.id));
       
       if (newUniqueVideos.length === 0) {
@@ -166,18 +162,13 @@ const App: React.FC = () => {
         return;
       }
 
-      // 3. Merge new videos with existing history
-      // We put new videos first, then existing ones
       const mergedHistory = [...newUniqueVideos, ...history];
-
-      // 4. Sort by date (descending)
       const sortedHistory = mergedHistory.sort((a, b) => 
         new Date(b.watchedDate).getTime() - new Date(a.watchedDate).getTime()
       );
       
-      setHistory(sortedHistory); // Triggers DB save
+      setHistory(sortedHistory);
       
-      // Update Timestamp
       const now = new Date().toLocaleString();
       localStorage.setItem('last_history_import', now);
       setLastUpdated(now);
@@ -267,14 +258,21 @@ const App: React.FC = () => {
 
   if (loadingDB) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
         Loading Library...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0f0f0f] text-white overflow-hidden">
+    <div className="flex min-h-screen bg-slate-950 text-slate-100 overflow-hidden relative selection:bg-rose-500/30">
+      
+      {/* Background Ambience */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px]" />
+      </div>
+
       <Sidebar 
         currentView={currentView} 
         onViewChange={setCurrentView} 
@@ -286,7 +284,7 @@ const App: React.FC = () => {
         lastUpdated={lastUpdated}
       />
       
-      <main className="flex-1 ml-64 h-screen overflow-hidden relative">
+      <main className="flex-1 ml-64 h-screen overflow-hidden relative z-10">
         <div className="h-full w-full">
           {currentView === 'dashboard' && (
             <Dashboard channels={channels} history={history} />

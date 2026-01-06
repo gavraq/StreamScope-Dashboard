@@ -77,7 +77,7 @@ StreamScope is a privacy-first, local-first dashboard for YouTube power users. U
 *   **Build System:** Vite (builds to static assets).
 *   **Web Server:** Nginx (Alpine Linux based) serving static files within the container.
 *   **Environment:**
-    *   **Domain:** `https://youtube.gavinslater.com`
+    *   **Domain:** `https://youtube.gavinslater.co.uk`
     *   **Host Server IP:** `192.168.5.190`
     *   **Port Mapping:** Host Port `8098` -> Container Port `80`.
 *   **SSL/Proxy:** Handled externally via Nginx Proxy Manager (NPM).

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { WatchedVideo, Channel } from '../types';
-import { format, parseISO, isSameDay } from 'date-fns';
-import { Calendar as CalendarIcon, Star, MessageSquare, Sparkles, Eye, AlignLeft, Search, Mic2, PlayCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon, Star, MessageSquare, Sparkles, Search, PlayCircle } from 'lucide-react';
 import { summarizeVideo, analyzeWatchMood } from '../services/geminiService';
 
 interface WatchHistoryProps {
@@ -124,7 +124,7 @@ const WatchHistory: React.FC<WatchHistoryProps> = ({ history, channels, onUpdate
                                 : 'bg-slate-800/30 text-slate-400 hover:bg-slate-800/50 border border-transparent'
                             }`}
                         >
-                            <span>{format(parseISO(date), 'MMM dd, yyyy')}</span>
+                            <span>{format(new Date(date), 'MMM dd, yyyy')}</span>
                             <span className="bg-slate-900 px-2 py-0.5 rounded text-xs border border-white/5">{count}</span>
                         </button>
                         ))}
@@ -162,7 +162,7 @@ const WatchHistory: React.FC<WatchHistoryProps> = ({ history, channels, onUpdate
                 {mode === 'calendar' ? (
                     <>
                         <CalendarIcon className="text-rose-500" size={20} />
-                        <span>{format(parseISO(selectedDate), 'MMMM do, yyyy')}</span>
+                        <span>{format(new Date(selectedDate), 'MMMM do, yyyy')}</span>
                     </>
                 ) : (
                     <>

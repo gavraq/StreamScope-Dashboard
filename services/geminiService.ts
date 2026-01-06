@@ -214,3 +214,35 @@ export const analyzeWatchMood = async (videos: WatchedVideo[]): Promise<{emoji: 
     return { emoji: "Error", text: "Could not analyze mood." };
   }
 };
+
+export const auditSubscriptions = async (channels: Channel[]): Promise<string> => {
+  try {
+    const ai = getAiClient();
+    // Limit to 50 channels to fit in context comfortably if list is huge
+    const channelList = channels.slice(0, 50).map(c => `- ${c.name} (${c.category}): ${c.description.substring(0, 100)}`).join('\n');
+    
+    const prompt = `
+      I am auditing my YouTube subscriptions. Here is a list of "Ghost Channels" I haven't watched in a long time.
+      
+      Channels:
+      ${channelList}
+      
+      Please analyze these.
+      1. Group them by primary topic.
+      2. Identify any that seem like "Quantity over Quality" content farms vs high-quality creators.
+      3. Suggest which ones are safe to unsubscribe from based on them being niche or inactive topics.
+      
+      Keep the response concise and formatted with Markdown.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+    });
+
+    return response.text || "Could not generate audit.";
+  } catch (error) {
+    console.error("Error auditing subs:", error);
+    return "Failed to audit subscriptions.";
+  }
+};

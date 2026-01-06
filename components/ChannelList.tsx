@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Channel, WatchedVideo } from '../types';
-import { suggestTagsForChannel } from '../services/geminiService';
-import { ExternalLink, Tag, Hash, Wand2, Filter, Search, Star, ArrowLeft, ArrowRight, Ghost, Activity } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { suggestTagsForChannel, auditSubscriptions } from '../services/geminiService';
+import { ExternalLink, Hash, Wand2, Filter, Search, Star, ArrowLeft, ArrowRight, Ghost, Activity, Bot, Sparkles, X } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ChannelListProps {
   channels: Channel[];
@@ -17,6 +17,10 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestingId, setSuggestingId] = useState<string | null>(null);
   const [showGhostChannels, setShowGhostChannels] = useState(false);
+  
+  // Audit State
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [auditResult, setAuditResult] = useState<string | null>(null);
 
   // Helper to count watched videos per channel
   const getChannelStats = (channelId: string) => {
@@ -73,6 +77,14 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
     const uniqueNewTags = tags.filter(t => !channel.userTags.includes(t) && !channel.suggestedTags.includes(t));
     onUpdateChannel({ ...channel, suggestedTags: [...channel.suggestedTags, ...uniqueNewTags] });
     setSuggestingId(null);
+  };
+
+  const handleAudit = async () => {
+    if (filteredChannels.length === 0) return;
+    setIsAuditing(true);
+    const result = await auditSubscriptions(filteredChannels);
+    setAuditResult(result);
+    setIsAuditing(false);
   };
 
   const toggleFavorite = (channel: Channel) => {
@@ -193,7 +205,7 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
                 </div>
                 {lastWatched && (
                     <span className="text-[10px] text-slate-500">
-                        {formatDistanceToNow(parseISO(lastWatched))} ago
+                        {formatDistanceToNow(new Date(lastWatched))} ago
                     </span>
                 )}
             </div>
@@ -227,7 +239,7 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
              <select 
                className="bg-transparent text-slate-200 py-2 focus:outline-none text-sm"
                value={sortMode}
-               onChange={(e) => setSortMode(e.target.value as any)}
+               onChange={(e) => setSortMode(e.target.value as 'watched' | 'subscribers' | 'videos')}
              >
                <option className="bg-slate-900" value="watched">Most Watched</option>
                <option className="bg-slate-900" value="subscribers">Most Subscribers</option>
@@ -240,7 +252,7 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
       {/* Category Pills & Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <button
-            onClick={() => setShowGhostChannels(!showGhostChannels)}
+            onClick={() => { setShowGhostChannels(!showGhostChannels); setAuditResult(null); }}
             className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 border ${
               showGhostChannels 
                 ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-900/30' 
@@ -250,6 +262,19 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
             <Ghost size={14} />
             Ghost Channels
         </button>
+        
+        {/* AI Audit Button (Only visible in Ghost Mode) */}
+        {showGhostChannels && filteredChannels.length > 0 && (
+           <button
+            onClick={handleAudit}
+            disabled={isAuditing}
+            className="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 border bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 disabled:opacity-50"
+          >
+            {isAuditing ? <Sparkles size={14} className="animate-spin" /> : <Bot size={14} />}
+            {isAuditing ? 'Analyzing...' : 'AI Audit'}
+           </button>
+        )}
+
         <div className="h-6 w-px bg-white/10 mx-2"></div>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin flex-1">
             {categories.map(cat => (
@@ -267,6 +292,27 @@ const ChannelList: React.FC<ChannelListProps> = ({ channels, history, onUpdateCh
             ))}
         </div>
       </div>
+
+      {/* Audit Result Panel */}
+      {auditResult && (
+        <div className="mb-8 bg-blue-950/20 border border-blue-500/20 rounded-2xl p-6 relative animate-fade-in backdrop-blur-md">
+            <button 
+                onClick={() => setAuditResult(null)}
+                className="absolute top-4 right-4 text-blue-400 hover:text-white transition-colors"
+            >
+                <X size={20} />
+            </button>
+            <div className="flex items-center gap-3 mb-4 text-blue-400">
+                <Bot size={24} />
+                <h3 className="font-bold text-lg">AI Subscription Audit</h3>
+            </div>
+            <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed">
+                 {auditResult.split('\n').map((line, i) => (
+                    <p key={i} className="mb-2">{line}</p>
+                 ))}
+            </div>
+        </div>
+      )}
 
       {/* Favorites Section */}
       {!showGhostChannels && favoriteChannels.length > 0 && (

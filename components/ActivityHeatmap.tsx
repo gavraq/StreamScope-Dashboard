@@ -1,15 +1,18 @@
 import React from 'react';
 import { WatchedVideo } from '../types';
-import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek, getDay } from 'date-fns';
+import { format, eachDayOfInterval, getDay } from 'date-fns';
 
 interface ActivityHeatmapProps {
   history: WatchedVideo[];
 }
 
-const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ history }) => {
+const ActivityHeatmap = ({ history }: ActivityHeatmapProps) => {
   // Generate last 365 days
   const today = new Date();
-  const startDate = subDays(today, 364); // approx 1 year
+  
+  // Calculate start date (364 days ago)
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 364);
   
   const dates = eachDayOfInterval({
     start: startDate,
@@ -33,14 +36,14 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ history }) => {
   };
 
   // Group by weeks for grid layout
-  // We need to pad the start to align with the correct day of week
   const weeks: Date[][] = [];
   let currentWeek: Date[] = [];
   
-  // Pad first week
+  // Pad first week with nulls (invalid dates)
   const startDay = getDay(startDate); // 0 (Sun) to 6 (Sat)
   for (let i = 0; i < startDay; i++) {
-    currentWeek.push(new Date(0)); // Placeholder
+    // We use a specific invalid date marker
+    currentWeek.push(new Date(0)); 
   }
 
   dates.forEach(date => {
@@ -60,10 +63,12 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ history }) => {
     <div className="w-full overflow-x-auto pb-2">
       <div className="flex gap-1 min-w-max">
         {weeks.map((week, weekIdx) => (
-          <div key={weekIdx} className="flex flex-col gap-1">
+          <div key={`week-${weekIdx}`} className="flex flex-col gap-1">
             {week.map((date, dayIdx) => {
-               // Render placeholder if invalid date
-               if (date.getTime() === 0) return <div key={dayIdx} className="w-3 h-3" />;
+               // Render placeholder if invalid date (Epoch 0)
+               if (date.getTime() === 0) {
+                 return <div key={`placeholder-${weekIdx}-${dayIdx}`} className="w-3 h-3" />;
+               }
                
                const dateStr = format(date, 'yyyy-MM-dd');
                const count = activityMap[dateStr] || 0;
